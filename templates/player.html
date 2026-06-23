@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ player.name }}</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        /* PAGE */
+
+        body {
+            font-family: Arial;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+
+        a {
+            text-decoration: none;
+            color: #E53935;
+            font-weight: bold;
+        }
+
+        /* LAYOUT */
+
+        .page-layout {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .left-column {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .right-column {
+            width: 320px;
+            flex-shrink: 0;
+        }
+
+        /* BOXES */
+
+        .box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(229, 57, 53, 0.12);
+            margin-bottom: 25px;
+        }
+
+        /* PROFILE */
+
+        .profile-section {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
+            margin-bottom: 25px;
+        }
+
+        .player-image {
+            width: 180px;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #eee;
+            background: white;
+        }
+
+        .placeholder-image {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #888;
+            background: #fafafa;
+            font-weight: bold;
+        }
+
+        .profile-box {
+            flex: 1;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* BUTTONS */
+
+        .edit-btn {
+            background-color: #E53935;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .edit-btn:hover {
+            background-color: #C62828;
+        }
+
+        .save-btn {
+            width: 100%;
+            background-color: #E53935;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            background-color: #C62828;
+        }
+
+        .delete-btn {
+            width: 100%;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* STATS */
+
+        .stats-grid {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            flex: 1;
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        /* HISTORY */
+
+        .history-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .history-card {
+            width: 140px;
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-sizing: border-box;
+            transition: 0.2s ease;
+        }
+
+        .history-card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* GRAPH */
+
+        .graph-box canvas {
+            width: 100% !important;
+            max-width: 100%;
+        }
+
+        .graph-box{
+            height: 400px;
+        }
+
+        /* EDIT PANEL */
+
+        .edit-panel input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+
+        #editSection {
+            display: none;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- BACK -->
+
+    <div style="padding:20px;">
+        <a href="/">← Back to Dashboard</a>
+    </div>
+
+    <div class="page-layout">
+
+        <!-- LEFT COLUMN -->
+
+        <div class="left-column">
+
+            <!-- PROFILE -->
+
+            <div class="profile-section">
+
+                <div>
+
+                    {% if player.image %}
+
+                        <img
+                            src="{{ url_for('static', filename='uploads/' + player.image) }}"
+                            class="player-image"
+                        >
+
+                    {% else %}
+
+                        <div class="player-image placeholder-image">
+                            No Image
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="box profile-box">
+
+                    <div class="profile-header">
+
+                        <h1>Profile</h1>
+
+                        <button
+                            class="edit-btn"
+                            onclick="toggleEdit()"
+                        >
+                            Edit Profile
+                        </button>
+
+                    </div>
+
+                    <h2>
+                        Role:
+                        {{ player.role | capitalize }}
+                    </h2>
+
+                    <h2>
+                        DOB:
+
+                        {% if player.dob %}
+                            {{ player.dob }}
+                        {% else %}
+                            Not Set
+                        {% endif %}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+            <!-- CURRENT STATS -->
+
+            {% if player.stats|length > 0 %}
+
+            {% set latest = player.stats[-1] %}
+
+            <div class="box">
+
+                <h1>Current Stats</h1>
+
+                <div class="stats-grid">
+
+                    <div class="stat-box">
+                        Heart Rate
+                        <br>
+                        <strong>{{ latest.heart_rate }}</strong>
+                    </div>
+
+                    <div class="stat-box">
+                        Stress
+                        <br>
+                        <strong>{{ latest.stress }}</strong>
+                    </div>
+
+                    <div class="stat-box">
+                        Fatigue
+                        <br>
+                        <strong>{{ latest.fatigue }}</strong>
+                    </div>
+
+                </div>
+
+                <!-- HISTORY -->
+
+                <h1 style="margin-top:30px;">
+                    Previous Entries
+                </h1>
+
+                <div class="history-grid">
+
+                    {% for stat in player.stats|reverse %}
+
+                    <div class="history-card">
+
+                        <strong>
+                            {{ stat.created_at.strftime("%m/%d") }}
+                        </strong>
+
+                        <br><br>
+
+                        HR: {{ stat.heart_rate }}
+                        <br>
+
+                        Stress: {{ stat.stress }}
+                        <br>
+
+                        Fatigue: {{ stat.fatigue }}
+
+                        <form
+                            method="POST"
+                            action="/delete_stat/{{ stat.id }}"
+                        >
+
+                            <button
+                                type="submit"
+                                class="delete-btn"
+                                onclick="return confirm('Delete this entry?');"
+                            >
+                                Delete Entry
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+            <!-- GRAPH -->
+
+            <div class="box graph-box">
+
+                <h1>Heart Rate Over Time</h1>
+
+                <canvas id="performanceChart"></canvas>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+
+        <div class="right-column">
+
+            <div
+                class="box edit-panel"
+                id="editSection"
+            >
+
+                <!-- MAIN FORM -->
+
+                <form
+                    method="POST"
+                    enctype="multipart/form-data"
+                >
+
+                    <h1>Edit Profile</h1>
+
+                    <input
+                        type="date"
+                        name="dob"
+                        value="{% if player.dob %}{{ player.dob }}{% endif %}"
+                    >
+
+                    <input
+                        type="file"
+                        name="image"
+                    >
+
+                    <h1 style="margin-top:30px;">
+                        Add Performance Entry
+                    </h1>
+
+                    <input
+                        type="number"
+                        name="heart_rate"
+                        placeholder="Heart Rate"
+                    >
+
+                    <input
+                        type="number"
+                        name="stress"
+                        placeholder="Stress (1-5)"
+                        min="1"
+                        max="5"
+                    >
+
+                    <input
+                        type="number"
+                        name="fatigue"
+                        placeholder="Fatigue (1-5)"
+                        min="1"
+                        max="5"
+                    >
+
+                    <button
+                        type="submit"
+                        class="save-btn"
+                    >
+                        Save Profile Changes
+                    </button>
+
+                </form>
+
+                <!-- REMOVE IMAGE -->
+
+                {% if player.image %}
+
+                <form
+                    method="POST"
+                    action="/delete_image/{{ player.id }}"
+                >
+
+                    <button
+                        type="submit"
+                        class="delete-btn"
+                    >
+                        Remove Image
+                    </button>
+
+                </form>
+
+                {% endif %}
+
+                <!-- UPDATE STATS -->
+
+                {% if player.stats|length > 0 %}
+
+                <form
+                    method="POST"
+                    action="/update_stats/{{ latest.id }}"
+                    style="margin-top:30px;"
+                >
+
+                    <h1>Update Current Stats</h1>
+
+                    <input
+                        type="number"
+                        name="heart_rate"
+                        value="{{ latest.heart_rate }}"
+                    >
+
+                    <input
+                        type="number"
+                        name="stress"
+                        value="{{ latest.stress }}"
+                        min="1"
+                        max="5"
+                    >
+
+                    <input
+                        type="number"
+                        name="fatigue"
+                        value="{{ latest.fatigue }}"
+                        min="1"
+                        max="5"
+                    >
+
+                    <button
+                        type="submit"
+                        class="save-btn"
+                    >
+                        Update Stats
+                    </button>
+
+                </form>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TOGGLE EDIT -->
+
+    <script>
+
+        function toggleEdit() {
+
+            const section =
+                document.getElementById("editSection");
+
+            if (section.style.display === "block") {
+
+                section.style.display = "none";
+
+            } else {
+
+                section.style.display = "block";
+
+            }
+
+        }
+
+    </script>
+
+    <!-- CHART -->
+
+    {% if player.stats|length > 0 %}
+
+    <script>
+
+        const chartLabels =
+            JSON.parse('{{ dates | tojson | safe }}');
+
+        const chartData =
+            JSON.parse('{{ heart_rates | tojson | safe }}');
+
+        const ctx =
+            document.getElementById("performanceChart");
+
+        new Chart(ctx, {
+
+            type: "line",
+
+            data: {
+
+                labels: chartLabels,
+
+                datasets: [
+                    {
+                        label: "Heart Rate",
+
+                        data: chartData,
+
+                        borderWidth: 3,
+
+                        tension: 0.3
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+
+        });
+
+    </script>
+
+    {% endif %}
+
+</body>
+</html>
