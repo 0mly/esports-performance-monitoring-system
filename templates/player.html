@@ -47,6 +47,7 @@
             background: white;
             padding: 20px;
             border-radius: 12px;
+            box-sizing: border-box;
             box-shadow: 0 6px 18px rgba(229, 57, 53, 0.12);
             margin-bottom: 25px;
         }
@@ -62,8 +63,8 @@
 
         .player-image {
             width: 180px;
-            height: 250px;
-            object-fit: cover;
+            height: 180px;
+            object-fit: contain;
             border-radius: 10px;
             border: 2px solid #eee;
             background: white;
@@ -177,13 +178,17 @@
 
         /* GRAPH */
 
-        .graph-box canvas {
-            width: 100% !important;
-            max-width: 100%;
+        .graph-box {
+            height: 450px;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto 25px auto;
         }
 
-        .graph-box{
-            height: 400px;
+        .graph-box canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
         }
 
         /* EDIT PANEL */
