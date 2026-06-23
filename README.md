@@ -43,17 +43,25 @@ The application provides a centralized dashboard for viewing player information,
 
 ## Screenshots
 
+### Login
+
+[Dashboard](screenshots/login-page.png)
+
 ### Dashboard
 
-*Add dashboard screenshot here*
+[Dashboard](screenshots/dashboard.png)
 
 ### Player Profile
 
-*Add player profile screenshot here*
+[Dashboard](screenshots/profile-page.png)
 
 ### Performance Graph
 
-*Add graph screenshot here*
+[Dashboard](screenshots/graph.png)
+
+### Edit Button
+
+[Dashboard](screenshots/edit-btn.png)
 
 ## Project Structure
 
